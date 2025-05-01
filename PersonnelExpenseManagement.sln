@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelExpenseManagement.API", "PersonnelExpenseManagement.API\PersonnelExpenseManagement.API.csproj", "{00EA85FD-F968-42ED-B8DB-AF0253E5DAD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelExpenseManagement.Application", "PersonnelExpenseManagement.Application\PersonnelExpenseManagement.Application.csproj", "{F872C39B-0A1A-4D9A-BB5B-C9758D76B5FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelExpenseManagement.Domain", "PersonnelExpenseManagement.Domain\PersonnelExpenseManagement.Domain.csproj", "{308A0559-B3F7-4C50-9F79-6C58B5D1043B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelExpenseManagement.Infrastructure", "PersonnelExpenseManagement.Infrastructure\PersonnelExpenseManagement.Infrastructure.csproj", "{03D5CFD3-EB8F-49AA-BC00-A567A487B6AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelExpenseManagement.Persistence", "PersonnelExpenseManagement.Persistence\PersonnelExpenseManagement.Persistence.csproj", "{07A6089E-C5D5-4B1F-B4D2-D2792525FBDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonnelExpenseManagement.Shared", "PersonnelExpenseManagement.Shared\PersonnelExpenseManagement.Shared.csproj", "{F1A24C6F-B0C5-48A9-9822-ACBC990DFEC9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00EA85FD-F968-42ED-B8DB-AF0253E5DAD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00EA85FD-F968-42ED-B8DB-AF0253E5DAD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00EA85FD-F968-42ED-B8DB-AF0253E5DAD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00EA85FD-F968-42ED-B8DB-AF0253E5DAD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F872C39B-0A1A-4D9A-BB5B-C9758D76B5FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F872C39B-0A1A-4D9A-BB5B-C9758D76B5FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F872C39B-0A1A-4D9A-BB5B-C9758D76B5FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F872C39B-0A1A-4D9A-BB5B-C9758D76B5FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{308A0559-B3F7-4C50-9F79-6C58B5D1043B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{308A0559-B3F7-4C50-9F79-6C58B5D1043B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{308A0559-B3F7-4C50-9F79-6C58B5D1043B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{308A0559-B3F7-4C50-9F79-6C58B5D1043B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03D5CFD3-EB8F-49AA-BC00-A567A487B6AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03D5CFD3-EB8F-49AA-BC00-A567A487B6AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03D5CFD3-EB8F-49AA-BC00-A567A487B6AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03D5CFD3-EB8F-49AA-BC00-A567A487B6AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07A6089E-C5D5-4B1F-B4D2-D2792525FBDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07A6089E-C5D5-4B1F-B4D2-D2792525FBDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07A6089E-C5D5-4B1F-B4D2-D2792525FBDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07A6089E-C5D5-4B1F-B4D2-D2792525FBDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1A24C6F-B0C5-48A9-9822-ACBC990DFEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1A24C6F-B0C5-48A9-9822-ACBC990DFEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1A24C6F-B0C5-48A9-9822-ACBC990DFEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1A24C6F-B0C5-48A9-9822-ACBC990DFEC9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
