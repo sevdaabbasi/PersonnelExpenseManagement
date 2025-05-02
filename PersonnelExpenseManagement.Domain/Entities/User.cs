@@ -13,4 +13,7 @@ public class User : IdentityUser
     
     // Navigation properties
     public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+    public virtual Role? Role { get; set; }
+    public string? RoleId { get; set; }
 } 
+ 
