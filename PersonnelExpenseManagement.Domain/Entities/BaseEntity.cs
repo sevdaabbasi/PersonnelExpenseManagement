@@ -2,8 +2,10 @@ namespace PersonnelExpenseManagement.Domain.Entities;
 
 public abstract class BaseEntity
 {
-    public int Id { get; set; }
-    public bool IsActive { get; set; } = true;
-    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedDate { get; set; }
+    public Guid Id { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public DateTime? ModifiedDate { get; set; }
+    public string CreatedBy { get; set; } = string.Empty;
+    public string? ModifiedBy { get; set; }
+    public bool IsDeleted { get; set; }
 } 

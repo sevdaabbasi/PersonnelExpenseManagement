@@ -14,6 +14,7 @@
     <ItemGroup>
       <ProjectReference Include="..\PersonnelExpenseManagement.Application\PersonnelExpenseManagement.Application.csproj" />
       <ProjectReference Include="..\PersonnelExpenseManagement.Domain\PersonnelExpenseManagement.Domain.csproj" />
+      <ProjectReference Include="..\PersonnelExpenseManagement.Persistence\PersonnelExpenseManagement.Persistence.csproj" />
       <ProjectReference Include="..\PersonnelExpenseManagement.Shared\PersonnelExpenseManagement.Shared.csproj" />
     </ItemGroup>
 

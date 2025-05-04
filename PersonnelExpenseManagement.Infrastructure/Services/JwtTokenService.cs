@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PersonnelExpenseManagement.Domain.Entities;
@@ -10,7 +11,7 @@ namespace PersonnelExpenseManagement.Infrastructure.Services;
 
 public interface IJwtTokenService
 {
-    string GenerateToken(User user);
+    Task<string> GenerateTokenAsync(User user, UserManager<User> userManager);
     ClaimsPrincipal? ValidateToken(string token);
 }
 
@@ -23,7 +24,7 @@ public class JwtTokenService : IJwtTokenService
         _jwtSettings = jwtSettings;
     }
 
-    public string GenerateToken(User user)
+    public async Task<string> GenerateTokenAsync(User user, UserManager<User> userManager)
     {
         var claims = new List<Claim>
         {
@@ -32,9 +33,11 @@ public class JwtTokenService : IJwtTokenService
             new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
         };
 
-        if (user.Role != null)
+       
+        var roles = await userManager.GetRolesAsync(user);
+        foreach (var role in roles)
         {
-            claims.Add(new Claim(ClaimTypes.Role, user.Role.Name));
+            claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
