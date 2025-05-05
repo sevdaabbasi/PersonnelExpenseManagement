@@ -29,7 +29,7 @@ public class AuthService : IAuthService
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public async Task<LoginResponse> LoginAsync(LoginRequest request)
+    public async Task<AuthResponse> LoginAsync(AuthRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
@@ -46,7 +46,7 @@ public class AuthService : IAuthService
         var token = await _jwtTokenService.GenerateTokenAsync(user, _userManager);
         var roles = await _userManager.GetRolesAsync(user);
 
-        return new LoginResponse
+        return new AuthResponse
         {
             Token = token,
             Expiration = DateTime.UtcNow.AddMinutes(30),

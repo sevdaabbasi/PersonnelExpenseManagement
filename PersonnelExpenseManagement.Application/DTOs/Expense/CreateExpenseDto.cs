@@ -1,3 +1,5 @@
+using FluentValidation;
+
 namespace PersonnelExpenseManagement.Application.DTOs.Expense;
 
 public class CreateExpenseDto
@@ -9,3 +11,6 @@ public class CreateExpenseDto
     public int ExpenseCategoryId { get; set; }
     public DateTime ExpenseDate { get; set; }
 } 
+
+
+

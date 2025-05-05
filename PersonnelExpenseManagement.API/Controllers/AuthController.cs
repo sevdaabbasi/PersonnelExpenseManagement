@@ -14,12 +14,12 @@ namespace PersonnelExpenseManagement.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    private readonly IValidator<LoginRequest> _loginValidator;
+    private readonly IValidator<AuthRequest> _loginValidator;
     private readonly IValidator<RegisterRequest> _registerValidator;
 
     public AuthController(
         IAuthService authService,
-        IValidator<LoginRequest> loginValidator,
+        IValidator<AuthRequest> loginValidator,
         IValidator<RegisterRequest> registerValidator)
     {
         _authService = authService;
@@ -28,7 +28,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] AuthRequest request)
     {
         var validationResult = await _loginValidator.ValidateAsync(request);
         if (!validationResult.IsValid)

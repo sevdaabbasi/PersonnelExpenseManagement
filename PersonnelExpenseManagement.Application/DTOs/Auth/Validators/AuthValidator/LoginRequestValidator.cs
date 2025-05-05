@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace PersonnelExpenseManagement.Application.DTOs.Auth.Validators;
 
-public class LoginRequestValidator : AbstractValidator<LoginRequest>
+public class LoginRequestValidator : AbstractValidator<AuthRequest>
 {
     public LoginRequestValidator()
     {

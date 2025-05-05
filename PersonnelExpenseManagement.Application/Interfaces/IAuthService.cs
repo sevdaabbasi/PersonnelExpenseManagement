@@ -6,7 +6,7 @@ namespace PersonnelExpenseManagement.Application.Interfaces;
 
 public interface IAuthService
 {
-    Task<LoginResponse> LoginAsync(LoginRequest request);
+    Task<AuthResponse> LoginAsync(AuthRequest request);
     Task<RegisterResponse> RegisterAsync(RegisterRequest request);
     Task LogoutAsync();
     Task<User> GetCurrentUserAsync(ClaimsPrincipal claimsPrincipal);
