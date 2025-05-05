@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PersonnelExpenseManagement.Application.DTOs.Auth;
@@ -8,7 +9,6 @@ using PersonnelExpenseManagement.Domain.Exceptions;
 using PersonnelExpenseManagement.Persistence.Contexts;
 
 namespace PersonnelExpenseManagement.Infrastructure.Services;
-
 
 public class AuthService : IAuthService
 {
@@ -29,62 +29,24 @@ public class AuthService : IAuthService
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public async Task<AuthResponse> LoginAsync(LoginRequest request)
+    public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
         {
-            throw new AuthenticationException("Invalid email or password");
+            throw new NotFoundException("User not found");
         }
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+        var result = await _signInManager.PasswordSignInAsync(user, request.Password, false, false);
         if (!result.Succeeded)
         {
-            throw new AuthenticationException("Invalid email or password");
+            throw new ValidationException("Invalid password");
         }
 
         var token = await _jwtTokenService.GenerateTokenAsync(user, _userManager);
         var roles = await _userManager.GetRolesAsync(user);
 
-        return new AuthResponse
-        {
-            Token = token,
-            Expiration = DateTime.UtcNow.AddMinutes(30), 
-            UserId = user.Id,
-            Email = user.Email ?? string.Empty,
-            Role = roles.FirstOrDefault() ?? "User"
-        };
-    }
-
-    public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
-    {
-        var existingUser = await _userManager.FindByEmailAsync(request.Email);
-        if (existingUser != null)
-        {
-            throw new BusinessException("Email is already registered");
-        }
-
-        var user = new User
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName
-        };
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
-        {
-            throw new BusinessException($"User creation failed: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-        }
-
-      
-        await _userManager.AddToRoleAsync(user, "User");
-
-        var token = await _jwtTokenService.GenerateTokenAsync(user, _userManager);
-        var roles = await _userManager.GetRolesAsync(user);
-
-        return new AuthResponse
+        return new LoginResponse
         {
             Token = token,
             Expiration = DateTime.UtcNow.AddMinutes(30),
@@ -94,20 +56,46 @@ public class AuthService : IAuthService
         };
     }
 
+    public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
+    {
+        var user = new User
+        {
+            UserName = request.Email,
+            Email = request.Email,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            IBAN = request.IBAN
+        };
+
+        var result = await _userManager.CreateAsync(user, request.Password);
+        if (!result.Succeeded)
+        {
+            throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
+
+        await _userManager.AddToRoleAsync(user, "User");
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return new RegisterResponse
+        {
+            UserId = user.Id,
+            Email = user.Email ?? string.Empty,
+            Role = roles.FirstOrDefault() ?? "User"
+        };
+    }
+
+    public async Task LogoutAsync()
+    {
+        await _signInManager.SignOutAsync();
+    }
+
     public async Task<User> GetCurrentUserAsync(ClaimsPrincipal claimsPrincipal)
     {
-        var userId = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null)
-        {
-            throw new AuthenticationException("User not found");
-        }
-
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await _userManager.GetUserAsync(claimsPrincipal);
         if (user == null)
         {
-            throw new AuthenticationException("User not found");
+            throw new NotFoundException("User not found");
         }
-
         return user;
     }
 } 
