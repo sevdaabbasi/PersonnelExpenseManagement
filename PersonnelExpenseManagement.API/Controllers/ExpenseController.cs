@@ -1,53 +1,83 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonnelExpenseManagement.Application.DTOs.Expense;
+using PersonnelExpenseManagement.Application.Interfaces;
 using PersonnelExpenseManagement.Domain.Entities;
 
 namespace PersonnelExpenseManagement.API.Controllers;
 
-
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ExpenseController : ControllerBase
 {
-   
-    [HttpGet]
-    [Authorize]
-    public IActionResult GetAll()
-    {
-        return Ok(new List<Expense>());
-    }
+    private readonly IExpenseService _expenseService;
 
-  
-    [HttpGet("{id}")]
-    [Authorize]
-    public IActionResult GetById(int id)
+    public ExpenseController(IExpenseService expenseService)
     {
-        return Ok(new Expense());
+        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
     }
-
 
     [HttpPost]
-    [Authorize]
-    public IActionResult Create([FromBody] CreateExpenseDto createExpenseDto)
+    public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseDto dto)
     {
-        // TODO: Implement expense creation logic
-        return CreatedAtAction(nameof(GetById), new { id = 1 }, createExpenseDto);
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var expense = await _expenseService.CreateExpenseAsync(userId, dto);
+        return CreatedAtAction(nameof(GetExpense), new { id = expense.Id }, expense);
     }
 
-
-    [HttpPut("{id}")]
-    [Authorize]
-    public IActionResult Update(int id, [FromBody] Expense expense)
+    [HttpGet]
+    public async Task<IActionResult> GetUserExpenses()
     {
-        return NoContent();
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var expenses = await _expenseService.GetUserExpensesAsync(userId);
+        return Ok(expenses);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetExpense(string id)
+    {
+        var expense = await _expenseService.GetExpenseByIdAsync(id);
+        return Ok(expense);
+    }
 
-    [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public IActionResult Delete(int id)
+    [HttpPost("{id}/approve")]
+    public async Task<IActionResult> ApproveExpense(string id)
     {
+        var approvedBy = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(approvedBy))
+        {
+            return Unauthorized();
+        }
+
+        await _expenseService.ApproveExpenseAsync(id, approvedBy);
         return NoContent();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{id}/reject")]
+    public async Task<IActionResult> RejectExpense(string id, [FromBody] string rejectionReason)
+    {
+        await _expenseService.RejectExpenseAsync(id, rejectionReason);
+        return NoContent();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("pending")]
+    public async Task<IActionResult> GetPendingExpenses()
+    {
+        var expenses = await _expenseService.GetPendingExpensesAsync();
+        return Ok(expenses);
     }
 } 
