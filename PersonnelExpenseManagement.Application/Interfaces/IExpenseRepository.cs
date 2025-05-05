@@ -11,5 +11,4 @@ public interface IExpenseRepository
     Task UpdateAsync(Expense expense);
     Task DeleteAsync(Expense expense);
     Task<IEnumerable<Expense>> GetByStatusAsync(ExpenseStatus status);
-    Task<IEnumerable<Expense>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
 } 
