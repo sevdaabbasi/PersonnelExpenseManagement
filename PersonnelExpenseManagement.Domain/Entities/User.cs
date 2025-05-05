@@ -6,7 +6,7 @@ public class User : IdentityUser
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public string IBAN { get; private set; } = string.Empty;
+    public string IBAN { get; set; } = string.Empty;
     public bool IsActive { get; private set; } = true;
     public DateTime CreatedDate { get; private set; } = DateTime.UtcNow;
     public DateTime? UpdatedDate { get; private set; }

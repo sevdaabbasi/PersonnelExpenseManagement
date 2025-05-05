@@ -13,7 +13,6 @@ public class Expense : BaseEntity
     public string? RejectionReason { get; set; }
     public DateTime ExpenseDate { get; set; }
 
-   
     public User User { get; set; } = null!;
     public ExpenseCategory ExpenseCategory { get; set; } = null!;
 }
