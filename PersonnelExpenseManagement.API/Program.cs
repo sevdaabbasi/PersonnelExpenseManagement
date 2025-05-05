@@ -13,8 +13,9 @@ using FluentValidation.AspNetCore;
 using PersonnelExpenseManagement.Application.DTOs.Auth;
 using PersonnelExpenseManagement.Application.DTOs.Auth.Validators;
 using PersonnelExpenseManagement.Application.Interfaces;
-using IAuthService = PersonnelExpenseManagement.Application.Interfaces;
 using PersonnelExpenseManagement.API.Configuration;
+using PersonnelExpenseManagement.Persistence.Repositories;
+using IJwtTokenService = PersonnelExpenseManagement.Application.Interfaces.IJwtTokenService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +70,9 @@ builder.Services.AddAuthorization(options =>
 
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 

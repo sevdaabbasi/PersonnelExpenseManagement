@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using PersonnelExpenseManagement.Application.DTOs.Auth;
+using PersonnelExpenseManagement.Application.Interfaces;
 using PersonnelExpenseManagement.Domain.Exceptions;
 using PersonnelExpenseManagement.Infrastructure.Services;
 using AuthenticationException = System.Security.Authentication.AuthenticationException;
