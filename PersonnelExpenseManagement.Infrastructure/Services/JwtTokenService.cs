@@ -15,7 +15,7 @@ public interface IJwtTokenService
     ClaimsPrincipal? ValidateToken(string token);
 }
 
-public class JwtTokenService : IJwtTokenService
+public class JwtTokenService : IJwtTokenService, Application.Interfaces.IJwtTokenService
 {
     private readonly JwtSettings _jwtSettings;
 
