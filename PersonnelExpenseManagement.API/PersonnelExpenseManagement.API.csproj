@@ -12,15 +12,17 @@
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\PersonnelExpenseManagement.Persistence\PersonnelExpenseManagement.Persistence.csproj" />
         <ProjectReference Include="..\PersonnelExpenseManagement.Application\PersonnelExpenseManagement.Application.csproj" />
         <ProjectReference Include="..\PersonnelExpenseManagement.Infrastructure\PersonnelExpenseManagement.Infrastructure.csproj" />
-        <ProjectReference Include="..\PersonnelExpenseManagement.Shared\PersonnelExpenseManagement.Shared.csproj" />
+        <ProjectReference Include="..\PersonnelExpenseManagement.Persistence\PersonnelExpenseManagement.Persistence.csproj" />
     </ItemGroup>
 
 </Project>

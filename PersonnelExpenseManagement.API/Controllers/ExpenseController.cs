@@ -3,81 +3,68 @@ using Microsoft.AspNetCore.Mvc;
 using PersonnelExpenseManagement.Application.DTOs.Expense;
 using PersonnelExpenseManagement.Application.Interfaces;
 using PersonnelExpenseManagement.Domain.Entities;
+using System.Security.Claims;
 
 namespace PersonnelExpenseManagement.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ExpenseController : ControllerBase
 {
     private readonly IExpenseService _expenseService;
 
     public ExpenseController(IExpenseService expenseService)
     {
-        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
+        _expenseService = expenseService;
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseDto dto)
+    public async Task<ActionResult<ExpenseDto>> CreateExpense([FromBody] CreateExpenseDto dto)
     {
-        var userId = User.FindFirst("sub")?.Value;
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized();
-        }
+        if (dto == null) return BadRequest("Request cannot be null");
 
-        var expense = await _expenseService.CreateExpenseAsync(userId, dto);
-        return CreatedAtAction(nameof(GetExpense), new { id = expense.Id }, expense);
-    }
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-    [HttpGet]
-    public async Task<IActionResult> GetUserExpenses()
-    {
-        var userId = User.FindFirst("sub")?.Value;
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized();
-        }
-
-        var expenses = await _expenseService.GetUserExpensesAsync(userId);
-        return Ok(expenses);
+        var result = await _expenseService.CreateExpenseAsync(dto, userId);
+        return CreatedAtAction(nameof(GetExpense), new { id = result.Id }, result);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetExpense(string id)
+    public async Task<ActionResult<ExpenseDto>> GetExpense(int id)
     {
+        if (id <= 0) return BadRequest("Invalid ID");
         var expense = await _expenseService.GetExpenseByIdAsync(id);
         return Ok(expense);
     }
 
-    [Authorize(Roles = "Admin")]
-    [HttpPost("{id}/approve")]
-    public async Task<IActionResult> ApproveExpense(string id)
+    [HttpGet("my")]
+    public async Task<ActionResult<IEnumerable<ExpenseDto>>> GetMyExpenses()
     {
-        var approvedBy = User.FindFirst("sub")?.Value;
-        if (string.IsNullOrEmpty(approvedBy))
-        {
-            return Unauthorized();
-        }
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        await _expenseService.ApproveExpenseAsync(id, approvedBy);
-        return NoContent();
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpPost("{id}/reject")]
-    public async Task<IActionResult> RejectExpense(string id, [FromBody] string rejectionReason)
-    {
-        await _expenseService.RejectExpenseAsync(id, rejectionReason);
-        return NoContent();
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpGet("pending")]
-    public async Task<IActionResult> GetPendingExpenses()
-    {
-        var expenses = await _expenseService.GetPendingExpensesAsync();
+        var expenses = await _expenseService.GetExpensesByUserIdAsync(userId);
         return Ok(expenses);
+    }
+
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<IEnumerable<ExpenseDto>>> GetAllExpenses()
+    {
+        var expenses = await _expenseService.GetExpensesByUserIdAsync(null);
+        return Ok(expenses);
+    }
+
+    [HttpPut("{id}/status")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ExpenseDto>> UpdateStatus(int id, [FromBody] UpdateExpenseStatusDto dto)
+    {
+        if (id <= 0) return BadRequest("Invalid ID");
+        if (dto == null) return BadRequest("Request cannot be null");
+
+        var result = await _expenseService.UpdateExpenseStatusAsync(id, dto.Status, dto.RejectionReason);
+        return Ok(result);
     }
 } 

@@ -5,10 +5,8 @@ namespace PersonnelExpenseManagement.Application.Interfaces;
 
 public interface IExpenseService
 {
-    Task<Expense> CreateExpenseAsync(string userId, CreateExpenseDto dto);
-    Task<IEnumerable<Expense>> GetUserExpensesAsync(string userId);
-    Task<Expense> GetExpenseByIdAsync(string id);
-    Task ApproveExpenseAsync(string id, string approvedBy);
-    Task RejectExpenseAsync(string id, string rejectionReason);
-    Task<IEnumerable<Expense>> GetPendingExpensesAsync();
+    Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto, string userId);
+    Task<ExpenseDto> GetExpenseByIdAsync(int id);
+    Task<IEnumerable<ExpenseDto>> GetExpensesByUserIdAsync(string userId);
+    Task<ExpenseDto> UpdateExpenseStatusAsync(int id, ExpenseStatus status, string? rejectionReason = null);
 }

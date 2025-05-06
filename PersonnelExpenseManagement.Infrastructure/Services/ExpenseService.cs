@@ -1,76 +1,96 @@
+using Microsoft.EntityFrameworkCore;
 using PersonnelExpenseManagement.Application.DTOs.Expense;
 using PersonnelExpenseManagement.Application.Interfaces;
 using PersonnelExpenseManagement.Domain.Entities;
 using PersonnelExpenseManagement.Domain.Exceptions;
+using PersonnelExpenseManagement.Persistence.Contexts;
+using FluentValidation;
 
 namespace PersonnelExpenseManagement.Infrastructure.Services;
 
 public class ExpenseService : IExpenseService
 {
-    private readonly IExpenseRepository _expenseRepository;
-    private readonly IUserRepository _userRepository;
+    private readonly ApplicationDbContext _context;
+    private readonly IValidator<CreateExpenseDto> _validator;
 
-    public ExpenseService(IExpenseRepository expenseRepository, IUserRepository userRepository)
+    public ExpenseService(ApplicationDbContext context, IValidator<CreateExpenseDto> validator)
     {
-        _expenseRepository = expenseRepository ?? throw new ArgumentNullException(nameof(expenseRepository));
-        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _context = context;
+        _validator = validator;
     }
 
-    public async Task<Expense> CreateExpenseAsync(string userId, CreateExpenseDto dto)
+    public async Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto, string userId)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-        {
-            throw new NotFoundException("User not found");
-        }
-
+        await _validator.ValidateAsync(dto);
+        
         var expense = new Expense
         {
             UserId = userId,
+            ExpenseCategoryId = dto.ExpenseCategoryId,
             Amount = dto.Amount,
             Description = dto.Description,
             Location = dto.Location,
             PaymentMethod = dto.PaymentMethod,
-            ExpenseCategoryId = dto.ExpenseCategoryId,
+            DocumentPath = dto.DocumentPath,
             ExpenseDate = dto.ExpenseDate,
             Status = ExpenseStatus.Pending
         };
 
-        return await _expenseRepository.AddAsync(expense);
+        _context.Expenses.Add(expense);
+        await _context.SaveChangesAsync();
+        return MapToDto(expense);
     }
 
-    public async Task<IEnumerable<Expense>> GetUserExpensesAsync(string userId)
+    public async Task<ExpenseDto> GetExpenseByIdAsync(int id)
     {
-        return await _expenseRepository.GetByUserIdAsync(userId);
+        var expense = await _context.Expenses
+            .Include(e => e.ExpenseCategory)
+            .FirstOrDefaultAsync(e => e.Id == id) 
+            ?? throw new NotFoundException($"Expense with ID {id} not found");
+
+        return MapToDto(expense);
     }
 
-    public async Task<Expense> GetExpenseByIdAsync(string id)
+    public async Task<IEnumerable<ExpenseDto>> GetExpensesByUserIdAsync(string userId)
     {
-        var expense = await _expenseRepository.GetByIdAsync(id);
-        if (expense == null)
-        {
-            throw new NotFoundException("Expense not found");
-        }
-        return expense;
+        var expenses = await _context.Expenses
+            .Include(e => e.ExpenseCategory)
+            .Where(e => e.UserId == userId)
+            .ToListAsync();
+
+        return expenses.Select(MapToDto);
     }
 
-    public async Task ApproveExpenseAsync(string id, string approvedBy)
+    public async Task<ExpenseDto> UpdateExpenseStatusAsync(int id, ExpenseStatus status, string? rejectionReason = null)
     {
-        var expense = await GetExpenseByIdAsync(id);
-        expense.Status = ExpenseStatus.Approved;
-        await _expenseRepository.UpdateAsync(expense);
-    }
+        var expense = await _context.Expenses.FindAsync(id) 
+            ?? throw new NotFoundException($"Expense with ID {id} not found");
 
-    public async Task RejectExpenseAsync(string id, string rejectionReason)
-    {
-        var expense = await GetExpenseByIdAsync(id);
-        expense.Status = ExpenseStatus.Rejected;
+        expense.Status = status;
         expense.RejectionReason = rejectionReason;
-        await _expenseRepository.UpdateAsync(expense);
+        
+        if (status == ExpenseStatus.Approved)
+        {
+            // Simple payment simulation
+            expense.Status = ExpenseStatus.Paid;
+        }
+
+        await _context.SaveChangesAsync();
+        return MapToDto(expense);
     }
 
-    public async Task<IEnumerable<Expense>> GetPendingExpensesAsync()
+    private static ExpenseDto MapToDto(Expense expense) => new()
     {
-        return await _expenseRepository.GetByStatusAsync(ExpenseStatus.Pending);
-    }
+        Id = expense.Id,
+        UserId = expense.UserId,
+        ExpenseCategoryId = expense.ExpenseCategoryId,
+        Amount = expense.Amount,
+        Description = expense.Description ?? string.Empty,
+        Location = expense.Location ?? string.Empty,
+        PaymentMethod = expense.PaymentMethod ?? string.Empty,
+        DocumentPath = expense.DocumentPath,
+        Status = expense.Status,
+        RejectionReason = expense.RejectionReason,
+        ExpenseDate = expense.ExpenseDate
+    };
 } 

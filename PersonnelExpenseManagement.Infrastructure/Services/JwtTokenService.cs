@@ -5,17 +5,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PersonnelExpenseManagement.Domain.Entities;
-using PersonnelExpenseManagement.Infrastructure.Services;
+using PersonnelExpenseManagement.Application.DTOs.Auth;
+using IJwtTokenService = PersonnelExpenseManagement.Application.Interfaces.IJwtTokenService;
 
 namespace PersonnelExpenseManagement.Infrastructure.Services;
 
-public interface IJwtTokenService
-{
-    Task<string> GenerateTokenAsync(User user, UserManager<User> userManager);
-    ClaimsPrincipal? ValidateToken(string token);
-}
-
-public class JwtTokenService : IJwtTokenService, Application.Interfaces.IJwtTokenService
+public class JwtTokenService : IJwtTokenService
 {
     private readonly JwtSettings _jwtSettings;
 
@@ -24,30 +19,26 @@ public class JwtTokenService : IJwtTokenService, Application.Interfaces.IJwtToke
         _jwtSettings = jwtSettings;
     }
 
-    public async Task<string> GenerateTokenAsync(User user, UserManager<User> userManager)
+    public string GenerateToken(User user, IList<string> roles)
     {
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id),
-            new(ClaimTypes.Email, user.Email ?? string.Empty),
-            new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
+            new(ClaimTypes.Name, user.UserName ?? string.Empty),
+            new(ClaimTypes.Email, user.Email ?? string.Empty)
         };
 
-       
-        var roles = await userManager.GetRolesAsync(user);
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes);
 
         var token = new JwtSecurityToken(
             issuer: _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
+            expires: expires,
             signingCredentials: credentials
         );
 
@@ -57,23 +48,19 @@ public class JwtTokenService : IJwtTokenService, Application.Interfaces.IJwtToke
     public ClaimsPrincipal? ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
-
         try
         {
-            var tokenValidationParameters = new TokenValidationParameters
+            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key)),
                 ValidateIssuer = true,
                 ValidIssuer = _jwtSettings.Issuer,
                 ValidateAudience = true,
                 ValidAudience = _jwtSettings.Audience,
-                ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
-            };
+            }, out _);
 
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
             return principal;
         }
         catch

@@ -8,10 +8,8 @@ public class Role : IdentityRole
     public DateTime CreatedDate { get; private set; } = DateTime.UtcNow;
     public DateTime? UpdatedDate { get; private set; }
 
-    
     public virtual ICollection<User> Users { get; private set; } = new List<User>();
 
-   
     protected Role() { }
 
     public Role(string name, string description) : base(name)
@@ -19,7 +17,6 @@ public class Role : IdentityRole
         Description = description;
     }
 
-   
     public void Update(string name, string description)
     {
         Name = name;

@@ -15,6 +15,7 @@ public class Payment : BaseEntity
 public enum PaymentStatus
 {
     Pending,
+    Processing,
     Completed,
     Failed
 }

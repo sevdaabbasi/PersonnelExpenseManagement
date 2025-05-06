@@ -7,6 +7,7 @@ using PersonnelExpenseManagement.Application.Interfaces;
 using PersonnelExpenseManagement.Domain.Entities;
 using PersonnelExpenseManagement.Domain.Exceptions;
 using PersonnelExpenseManagement.Persistence.Contexts;
+using ValidationException = PersonnelExpenseManagement.Domain.Exceptions.ValidationException;
 
 namespace PersonnelExpenseManagement.Infrastructure.Services;
 
@@ -31,33 +32,33 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> LoginAsync(AuthRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user == null)
+        var user = await _userManager.FindByEmailAsync(request.Email)
+            ?? throw new AuthenticationException("Invalid email or password");
+
+        if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            throw new NotFoundException("User not found");
+            throw new AuthenticationException("Invalid email or password");
         }
 
-        var result = await _signInManager.PasswordSignInAsync(user, request.Password, false, false);
-        if (!result.Succeeded)
-        {
-            throw new ValidationException("Invalid password");
-        }
-
-        var token = await _jwtTokenService.GenerateTokenAsync(user, _userManager);
         var roles = await _userManager.GetRolesAsync(user);
+        var token = _jwtTokenService.GenerateToken(user, roles);
 
         return new AuthResponse
         {
             Token = token,
-            Expiration = DateTime.UtcNow.AddMinutes(30),
-            UserId = user.Id,
-            Email = user.Email ?? string.Empty,
-            Role = roles.FirstOrDefault() ?? "User"
+            Email = user.Email!,
+            UserName = user.UserName!
         };
     }
 
-    public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
+    public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
+        var existingUser = await _userManager.FindByEmailAsync(request.Email);
+        if (existingUser != null)
+        {
+            throw new ValidationException("Email is already registered");
+        }
+
         var user = new User
         {
             UserName = request.Email,
@@ -74,13 +75,15 @@ public class AuthService : IAuthService
         }
 
         await _userManager.AddToRoleAsync(user, "User");
-        var roles = await _userManager.GetRolesAsync(user);
 
-        return new RegisterResponse
+        var roles = await _userManager.GetRolesAsync(user);
+        var token = _jwtTokenService.GenerateToken(user, roles);
+
+        return new AuthResponse
         {
-            UserId = user.Id,
-            Email = user.Email ?? string.Empty,
-            Role = roles.FirstOrDefault() ?? "User"
+            Token = token,
+            Email = user.Email,
+            UserName = user.UserName!
         };
     }
 

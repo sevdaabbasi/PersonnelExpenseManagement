@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using PersonnelExpenseManagement.Domain.Entities;
+using System.Security.Claims;
 
 namespace PersonnelExpenseManagement.Application.Interfaces;
 
 public interface IJwtTokenService
 {
-    Task<string> GenerateTokenAsync(User user, UserManager<User> userManager);
+    string GenerateToken(User user, IList<string> roles);
+    ClaimsPrincipal? ValidateToken(string token);
 } 
